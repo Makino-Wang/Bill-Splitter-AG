@@ -1,0 +1,12 @@
+{
+  "timeZone": "Asia/Taipei",
+  "dependencies": {},
+  "webapp": {
+    "executeAs": "USER_DEPLOYING",
+    "access": "ANYONE"
+  },
+  "exceptionLogging": "STACKDRIVER",
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/spreadsheets"
+  ]
+}
