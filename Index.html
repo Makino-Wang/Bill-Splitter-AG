@@ -27,6 +27,12 @@
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
   <div id="app" v-cloak></div>
 
+  <!-- GAS Dynamic Config -->
+  <script>
+    window.APP_URL = '<?= ScriptApp.getService().getUrl() ?>';
+    window.INITIAL_TRIP = '<?= initialTrip ?>';
+  </script>
+
   <!-- Main Vue Logic -->
   <?!= include('App'); ?>
 </body>

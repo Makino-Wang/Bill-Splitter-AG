@@ -2,10 +2,12 @@
  * 主入口
  */
 function doGet(e) {
-  const html = HtmlService.createTemplateFromFile('Index').evaluate();
-  html.setTitle('旅遊分帳 Web App');
-  html.addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no');
-  return html;
+  const html = HtmlService.createTemplateFromFile('Index');
+  html.initialTrip = e.parameter.trip || '';
+  const output = html.evaluate();
+  output.setTitle('旅遊分帳 Web App');
+  output.addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no');
+  return output;
 }
 
 /**
