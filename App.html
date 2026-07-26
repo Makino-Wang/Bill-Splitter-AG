@@ -480,10 +480,10 @@
           }
         });
         
-        // Round numbers
+        // Round numbers to 2 decimal places
         Object.keys(totals).forEach(k => {
-          totals[k].paid = Math.round(totals[k].paid);
-          totals[k].split = Math.round(totals[k].split);
+          totals[k].paid = Math.round(totals[k].paid * 100) / 100;
+          totals[k].split = Math.round(totals[k].split * 100) / 100;
         });
         
         return totals;
@@ -492,7 +492,7 @@
       const memberBalances = computed(() => {
         const bal = {};
         Object.entries(memberTotals.value).forEach(([m, t]) => {
-          bal[m] = t.paid - t.split;
+          bal[m] = Math.round((t.paid - t.split) * 100) / 100;
         });
         return bal;
       });
@@ -518,7 +518,7 @@
           let creditor = creditors[j];
           
           let amount = Math.min(debtor.amount, creditor.amount);
-          amount = Math.round(amount);
+          amount = Math.round(amount * 100) / 100;
           
           if (amount > 0) {
             results.push({
@@ -528,11 +528,11 @@
             });
           }
           
-          debtor.amount -= amount;
-          creditor.amount -= amount;
+          debtor.amount = Math.round((debtor.amount - amount) * 100) / 100;
+          creditor.amount = Math.round((creditor.amount - amount) * 100) / 100;
           
-          if (debtor.amount < 0.5) i++;
-          if (creditor.amount < 0.5) j++;
+          if (debtor.amount < 0.01) i++;
+          if (creditor.amount < 0.01) j++;
         }
         
         return results;
