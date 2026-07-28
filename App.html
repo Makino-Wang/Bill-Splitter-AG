@@ -55,9 +55,14 @@
             </h1>
             <p class="text-sm text-slate-500 mt-1">共 {{ members.length }} 位成員</p>
           </div>
-          <button @click="copyLink" class="flex items-center gap-2 bg-white border border-slate-200 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
-            <i class="ph ph-link"></i> 複製連結
-          </button>
+          <div class="flex items-center gap-3">
+            <button @click="goHome" class="flex items-center gap-2 bg-white border border-slate-200 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
+              <i class="ph ph-house"></i> 回首頁
+            </button>
+            <button @click="copyLink" class="flex items-center gap-2 bg-white border border-slate-200 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
+              <i class="ph ph-link"></i> 複製連結
+            </button>
+          </div>
         </div>
 
         <!-- Balances & Settlements Overview -->
@@ -70,7 +75,7 @@
               <div v-for="m in members" :key="m" class="flex justify-between items-center border-b border-slate-100 pb-2 last:border-0 last:pb-0">
                 <span class="font-medium">{{ m }}</span>
                 <div class="text-right text-sm">
-                  <div class="text-slate-500">付: {{ (memberTotals[m]?.paid || 0).toLocaleString() }} / 應: {{ (memberTotals[m]?.split || 0).toLocaleString() }}</div>
+                  <div class="text-slate-500">已付: {{ (memberTotals[m]?.paid || 0).toLocaleString() }} / 應付: {{ (memberTotals[m]?.split || 0).toLocaleString() }}</div>
                   <div :class="memberBalances[m] >= 0 ? 'text-emerald-600 font-bold' : 'text-rose-600 font-bold'">
                     {{ memberBalances[m] > 0 ? '+' : '' }}{{ (memberBalances[m] || 0).toLocaleString() }}
                   </div>
@@ -369,6 +374,14 @@
         }
       };
 
+      const goHome = () => {
+        tripId.value = '';
+        tripInput.value = '';
+        newTripInput.value = '';
+        // Clear query string from URL if any
+        window.history.pushState({}, '', window.location.pathname);
+      };
+
       const copyLink = () => {
         let baseUrl = window.APP_URL;
         if (!baseUrl) {
@@ -541,7 +554,7 @@
       return {
         tripId, tripInput, newTripInput, isLoading, isSaving, isLoadingMember, toastMessage,
         members, expenses, isExpenseModalOpen, modalForm, newMemberName,
-        enterTrip, createNewTrip, fetchTripData, copyLink,
+        enterTrip, createNewTrip, fetchTripData, copyLink, goHome,
         openExpenseModal, closeExpenseModal, onPayerChange, addMember, saveExpense, deleteExpense,
         getExpenseTotal, isModalValid, memberTotals, memberBalances, settlements
       };

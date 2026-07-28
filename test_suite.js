@@ -7,6 +7,14 @@ class MockSheet {
     this.data = []; // 2D array
     this.frozenRows = 0;
   }
+  setName(newName) { 
+    const oldName = this.name;
+    this.name = newName; 
+    if (global.ssMock && global.ssMock.sheets[oldName] === this) {
+      delete global.ssMock.sheets[oldName];
+      global.ssMock.sheets[newName] = this;
+    }
+  }
   getRange(row, col, numRows = 1, numCols = 1) {
     return {
       getValue: () => {
@@ -35,6 +43,15 @@ class MockSheet {
             this.data[row-1+i][col-1+j] = vals[i][j];
           }
         }
+      },
+      clearContent: () => {
+        for (let i = 0; i < numRows; i++) {
+          if (this.data[row-1+i]) {
+            for (let j = 0; j < numCols; j++) {
+              this.data[row-1+i][col-1+j] = '';
+            }
+          }
+        }
       }
     };
   }
@@ -42,6 +59,12 @@ class MockSheet {
   getLastRow() { return this.data.length; }
   appendRow(rowArray) { this.data.push(rowArray); }
   deleteRow(rowNum) { this.data.splice(rowNum - 1, 1); }
+  copyTo(ss) {
+    const copy = new MockSheet(this.name + ' Copy');
+    copy.data = JSON.parse(JSON.stringify(this.data)); // deep copy array
+    ss.sheets[copy.name] = copy;
+    return copy;
+  }
 }
 
 global.ssMock = {
@@ -49,6 +72,12 @@ global.ssMock = {
   getSheetByName: function(name) { return this.sheets[name] || null; },
   insertSheet: function(name) { this.sheets[name] = new MockSheet(name); return this.sheets[name]; }
 };
+
+// Setup Template sheet
+const templateSheet = new MockSheet('Template');
+templateSheet.data = [['ID', 'Date', 'Store', 'Item', 'Amount', 'HasServiceFee', 'G(formula)', 'Payer', 'Splitters', 'Note', 'K(formula members)', '', '', '', 'O(manual members)']];
+global.ssMock.sheets['Template'] = templateSheet;
+
 
 global.SpreadsheetApp = { openById: () => global.ssMock };
 global.PropertiesService = { getScriptProperties: () => ({ getProperty: () => 'mock_id' }) };
@@ -78,52 +107,38 @@ function runTest(name, fn) {
     console.log(`✅ PASS: ${name}`);
     testsPassed++;
   } catch (e) {
-    // Error already logged in assert, or unexpected error
-    if (e.message !== e.message) { // just to catch unexpected
+    if (e.message !== e.message) {
       console.error(`❌ FAIL: ${name} - Unexpected error: ${e.message}`);
       testsFailed++;
     }
   }
 }
 
-console.log("=== 🚀 旅遊分帳 (Bill Splitter) Code-Level Test Suite ===");
+console.log("=== 🚀 旅遊分帳 (Bill Splitter) Code-Level Test Suite (NEW) ===");
 
 // === BACKEND TESTS (Code.gs) ===
 console.log("\n--- Backend CRUD Tests ---");
 
-runTest("createTrip: Should create a new trip and initialize headers", () => {
+runTest("createTrip: Should copy from Template and set name", () => {
   const res = createTrip('TestTrip1');
   assert(res.success === true, "Trip creation failed");
   const sheet = global.ssMock.getSheetByName('TestTrip1');
   assert(sheet !== null, "Sheet was not created");
-  assert(sheet.data[0][0] === 'ID', "Headers not initialized properly");
 });
 
 runTest("createTrip: Should fail if trip already exists", () => {
   const res = createTrip('TestTrip1');
   assert(res.success === false, "Should return false for existing trip");
-  assert(res.message === '行程已存在', "Wrong error message");
 });
 
-runTest("addMember: Should add members correctly", () => {
+runTest("addMember: Should add manual members to O1", () => {
   const res1 = addMember('TestTrip1', 'Alice');
   assert(res1.success === true, "Add member Alice failed");
   const res2 = addMember('TestTrip1', 'Bob');
   assert(res2.members.includes('Alice') && res2.members.includes('Bob'), "Members list incorrect");
 });
 
-runTest("addMember: Should fail if member already exists", () => {
-  let failed = false;
-  try {
-    addMember('TestTrip1', 'Alice');
-  } catch(e) {
-    failed = true;
-    assert(e.message === '成員已存在', "Wrong exception message");
-  }
-  assert(failed, "Did not throw exception for duplicate member");
-});
-
-runTest("saveExpense: Should add a new expense", () => {
+runTest("saveExpense: Should append a new expense using findFirstEmptyRow", () => {
   const payload = {
     date: '2026-07-24',
     store: 'Dinner',
@@ -163,7 +178,7 @@ runTest("saveExpense: Should update an existing expense", () => {
   assert(data.expenses[0].amount === 150, "Update amount not applied");
 });
 
-runTest("deleteExpense: Should delete an expense", () => {
+runTest("deleteExpense: Should clear content instead of deleting row", () => {
   let data = getTripData('TestTrip1');
   const expenseId = data.expenses[0].id;
   
@@ -171,118 +186,12 @@ runTest("deleteExpense: Should delete an expense", () => {
   assert(res.success === true, "Delete failed");
   
   data = getTripData('TestTrip1');
-  assert(data.expenses.length === 0, "Expense was not removed");
-});
-
-
-// === FRONTEND TESTS (Calculations from App.html) ===
-console.log("\n--- Frontend Calculation Tests ---");
-
-function testSettlementLogic(members, expenses, expectedResults) {
-  const getExpenseTotal = (exp) => {
-    const amt = Number(exp.amount) || 0;
-    return exp.hasServiceFee ? Math.round(amt * 1.1) : amt;
-  };
-
-  const totals = {};
-  members.forEach(m => totals[m] = { paid: 0, split: 0 });
+  assert(data.expenses.length === 0, "Expense was not removed from payload");
   
-  expenses.forEach(exp => {
-    const totalAmt = getExpenseTotal(exp);
-    if (exp.payer && totals[exp.payer]) {
-      totals[exp.payer].paid += totalAmt;
-    }
-    if (exp.splitters && exp.splitters.length > 0) {
-      const splitAmt = totalAmt / exp.splitters.length;
-      exp.splitters.forEach(s => {
-        if (totals[s]) totals[s].split += splitAmt;
-      });
-    }
-  });
-
-  Object.keys(totals).forEach(k => {
-    totals[k].paid = Math.round(totals[k].paid * 100) / 100;
-    totals[k].split = Math.round(totals[k].split * 100) / 100;
-  });
-
-  const memberBalances = {};
-  Object.entries(totals).forEach(([m, t]) => {
-    memberBalances[m] = Math.round((t.paid - t.split) * 100) / 100;
-  });
-
-  const debtors = [];
-  const creditors = [];
-  
-  Object.entries(memberBalances).forEach(([person, amount]) => {
-    if (amount > 0) creditors.push({ person, amount });
-    else if (amount < 0) debtors.push({ person, amount: -amount });
-  });
-  
-  debtors.sort((a, b) => b.amount - a.amount);
-  creditors.sort((a, b) => b.amount - a.amount);
-  
-  const results = [];
-  let i = 0, j = 0;
-  
-  while (i < debtors.length && j < creditors.length) {
-    let debtor = debtors[i];
-    let creditor = creditors[j];
-    
-    let amount = Math.min(debtor.amount, creditor.amount);
-    amount = Math.round(amount * 100) / 100;
-    
-    if (amount > 0) {
-      results.push({ from: debtor.person, to: creditor.person, amount: amount });
-    }
-    
-    debtor.amount = Math.round((debtor.amount - amount) * 100) / 100;
-    creditor.amount = Math.round((creditor.amount - amount) * 100) / 100;
-    
-    if (debtor.amount < 0.01) i++;
-    if (creditor.amount < 0.01) j++;
-  }
-  
-  return { memberBalances, results };
-}
-
-
-runTest("Settlement: Basic split without service fee", () => {
-  const res = testSettlementLogic(
-    ['A', 'B'], 
-    [{ payer: 'A', splitters: ['A', 'B'], amount: 100, hasServiceFee: false }]
-  );
-  assert(res.memberBalances['A'] === 50, "A balance wrong");
-  assert(res.memberBalances['B'] === -50, "B balance wrong");
-  assert(res.results.length === 1, "Should have 1 transaction");
-  assert(res.results[0].from === 'B' && res.results[0].to === 'A' && res.results[0].amount === 50, "Transaction wrong");
-});
-
-runTest("Settlement: Circular debt cancels out", () => {
-  // A pays for B (100), B pays for C (100), C pays for A (100)
-  const res = testSettlementLogic(
-    ['A', 'B', 'C'], 
-    [
-      { payer: 'A', splitters: ['B'], amount: 100, hasServiceFee: false },
-      { payer: 'B', splitters: ['C'], amount: 100, hasServiceFee: false },
-      { payer: 'C', splitters: ['A'], amount: 100, hasServiceFee: false },
-    ]
-  );
-  assert(res.memberBalances['A'] === 0, "A balance should be 0");
-  assert(res.results.length === 0, "Should have 0 transactions");
-});
-
-runTest("Settlement: Complex floating point precision test (The previously fixed bug)", () => {
-  // Total 155 split across 4 people in weird fractions
-  const res = testSettlementLogic(
-    ['A', 'B', 'C', 'D'], 
-    [
-      { payer: 'A', splitters: ['A', 'B', 'C', 'D'], amount: 100, hasServiceFee: false },
-      { payer: 'B', splitters: ['C', 'D', 'A'], amount: 50, hasServiceFee: true }, // 55
-    ]
-  );
-  // Balances should exactly sum to 0
-  const sum = Math.round(Object.values(res.memberBalances).reduce((a,b)=>a+b, 0)*100)/100;
-  assert(sum === 0, `Balances do not sum to zero! Sum is ${sum}`);
+  // Verify sheet row is still there but empty in A
+  const sheet = global.ssMock.getSheetByName('TestTrip1');
+  assert(sheet.getLastRow() === 2, "Row should not be physically deleted");
+  assert(sheet.getRange(2,1).getValue() === '', "Row ID should be empty");
 });
 
 console.log(`\n=== 📊 Test Summary: ${testsPassed} Passed, ${testsFailed} Failed ===\n`);

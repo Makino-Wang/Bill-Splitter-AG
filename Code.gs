@@ -98,7 +98,7 @@ function getTripData(tripName) {
   if (lastRow > 1) {
     // 取得 K 欄 (有哪些人) 的公式產生名單
     const kData = sheet.getRange(2, 11, lastRow - 1, 1).getValues(); // 11 = K
-    formulaMembers = kData.flat().map(m => String(m).trim()).filter(Boolean);
+    formulaMembers = kData.flat().map(m => String(m).trim()).filter(m => m && !m.startsWith('#VALUE!') && !m.startsWith('#N/A') && !m.startsWith('#REF!'));
     
     // 取得消費明細 A~J (columns 1 to 10)
     const data = sheet.getRange(2, 1, lastRow - 1, 10).getValues();
@@ -146,7 +146,7 @@ function addMember(tripName, memberName) {
   let formulaMembers = [];
   if (lastRow > 1) {
     const kData = sheet.getRange(2, 11, lastRow - 1, 1).getValues();
-    formulaMembers = kData.flat().map(m => String(m).trim()).filter(Boolean);
+    formulaMembers = kData.flat().map(m => String(m).trim()).filter(m => m && !m.startsWith('#VALUE!') && !m.startsWith('#N/A') && !m.startsWith('#REF!'));
   }
   
   const allMembers = new Set([...manualMembers, ...formulaMembers]);
