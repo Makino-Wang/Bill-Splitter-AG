@@ -1,38 +1,39 @@
 <script type="text/x-template" id="app-template">
   <div class="max-w-3xl mx-auto px-4 py-8">
     <!-- Toast Notification -->
-    <div v-if="toastMessage" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-800 text-white px-4 py-2 rounded shadow-lg transition-opacity">
-      {{ toastMessage }}
+    <div v-if="toastMessage" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-800 border border-slate-700 text-white px-4 py-2 rounded-lg shadow-2xl transition-opacity flex items-center gap-2 text-sm font-medium">
+      <i class="ph ph-info text-primary-400 text-base"></i>
+      <span>{{ toastMessage }}</span>
     </div>
 
     <!-- 1. Home View -->
     <div v-if="!tripId" class="flex flex-col items-center justify-center min-h-[70vh]">
-      <div class="bg-white p-8 rounded-2xl card-shadow w-full max-w-md text-center">
-        <div class="w-16 h-16 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div class="bg-slate-800 border border-slate-700/60 p-8 rounded-2xl card-shadow w-full max-w-md text-center">
+        <div class="w-16 h-16 bg-primary-500/10 text-primary-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary-500/20">
           <i class="ph ph-airplane-tilt text-3xl"></i>
         </div>
-        <h1 class="text-2xl font-bold mb-2">旅遊分帳</h1>
-        <p class="text-slate-500 mb-8">與朋友輕鬆結算每筆花費</p>
+        <h1 class="text-2xl font-bold mb-2 text-white">旅遊分帳</h1>
+        <p class="text-slate-400 mb-8 text-sm">與朋友輕鬆結算每筆花費</p>
 
         <div class="space-y-4">
           <div class="text-left">
-            <label class="block text-sm font-medium text-slate-700 mb-1">進入既有行程</label>
+            <label class="block text-sm font-medium text-slate-300 mb-1">進入既有行程</label>
             <div class="flex gap-2">
-              <input v-model="tripInput" type="text" placeholder="輸入行程代碼" class="flex-1 border border-slate-300 rounded-lg px-4 py-2" @keyup.enter="enterTrip">
-              <button @click="enterTrip" class="bg-slate-800 text-white px-4 py-2 rounded-lg font-medium hover:bg-slate-700 transition">進入</button>
+              <input v-model="tripInput" type="text" placeholder="輸入行程代碼" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-slate-100 placeholder-slate-500" @keyup.enter="enterTrip">
+              <button @click="enterTrip" class="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-500 transition">進入</button>
             </div>
           </div>
           
           <div class="relative py-4">
-            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
-            <div class="relative flex justify-center"><span class="bg-white px-4 text-sm text-slate-400">或</span></div>
+            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-700/80"></div></div>
+            <div class="relative flex justify-center"><span class="bg-slate-800 px-4 text-sm text-slate-400">或</span></div>
           </div>
 
           <div class="text-left">
-            <label class="block text-sm font-medium text-slate-700 mb-1">建立新行程</label>
+            <label class="block text-sm font-medium text-slate-300 mb-1">建立新行程</label>
             <div class="flex gap-2">
-              <input v-model="newTripInput" type="text" placeholder="例如：2026九州" class="flex-1 border border-slate-300 rounded-lg px-4 py-2" @keyup.enter="createNewTrip">
-              <button @click="createNewTrip" :disabled="isLoading" class="bg-primary-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-600 transition disabled:opacity-50">建立</button>
+              <input v-model="newTripInput" type="text" placeholder="例如：2026九州" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-slate-100 placeholder-slate-500" @keyup.enter="createNewTrip">
+              <button @click="createNewTrip" :disabled="isLoading" class="bg-slate-700 text-white px-4 py-2 rounded-lg font-medium hover:bg-slate-600 transition disabled:opacity-50">建立</button>
             </div>
           </div>
         </div>
@@ -41,26 +42,36 @@
 
     <!-- 2. Trip View -->
     <div v-else>
-      <!-- Loading State -->
-      <div v-if="isLoading" class="flex justify-center items-center py-20">
-        <i class="ph ph-spinner animate-spin text-4xl text-primary-500"></i>
+      <!-- Loading State for Initial Load -->
+      <div v-if="isLoading" class="flex flex-col justify-center items-center py-24 gap-3">
+        <i class="ph ph-spinner animate-spin text-4xl text-primary-400"></i>
+        <span class="text-slate-400 text-sm">正在載入行程資料...</span>
       </div>
 
       <div v-else>
         <!-- Header -->
-        <div class="flex items-center justify-between mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 class="text-2xl font-bold flex items-center gap-2">
+            <h1 class="text-2xl font-bold flex items-center gap-2 text-white">
               {{ tripId }}
             </h1>
-            <p class="text-sm text-slate-500 mt-1">共 {{ members.length }} 位成員</p>
+            <div class="flex items-center gap-3 text-xs text-slate-400 mt-1.5 flex-wrap">
+              <span class="flex items-center gap-1"><i class="ph ph-users"></i> 共 {{ members.length }} 位成員</span>
+              <span class="text-slate-600">•</span>
+              <span class="flex items-center gap-1 text-slate-300">
+                <i class="ph ph-clock text-primary-400"></i> 最後更新：{{ lastUpdatedTime || '載入中...' }}
+              </span>
+            </div>
           </div>
-          <div class="flex items-center gap-3">
-            <button @click="goHome" class="flex items-center gap-2 bg-white border border-slate-200 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
+          <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            <button @click="goHome" class="flex items-center gap-1.5 bg-slate-800 border border-slate-700 text-slate-300 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-750 hover:text-white transition">
               <i class="ph ph-house"></i> 回首頁
             </button>
-            <button @click="copyLink" class="flex items-center gap-2 bg-white border border-slate-200 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
+            <button @click="copyLink" class="flex items-center gap-1.5 bg-slate-800 border border-slate-700 text-slate-300 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-750 hover:text-white transition">
               <i class="ph ph-link"></i> 複製連結
+            </button>
+            <button @click="fetchTripData(true)" :disabled="isRefreshing" class="flex items-center gap-1.5 bg-slate-800 border border-slate-700 text-slate-300 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-750 hover:text-white transition" title="重新整理帳目">
+              <i class="ph ph-arrows-clockwise text-primary-400" :class="{ 'animate-spin': isRefreshing }"></i> 重新整理
             </button>
           </div>
         </div>
@@ -68,15 +79,15 @@
         <!-- Balances & Settlements Overview -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <!-- Member Balances -->
-          <div class="bg-white rounded-2xl p-6 card-shadow">
-            <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="ph ph-users"></i> 成員帳目總覽</h2>
-            <div v-if="members.length === 0" class="text-slate-500 text-sm">尚未加入成員</div>
+          <div class="bg-slate-800 rounded-2xl p-6 card-shadow border border-slate-700/60">
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-white"><i class="ph ph-users text-primary-400"></i> 成員帳目總覽</h2>
+            <div v-if="members.length === 0" class="text-slate-400 text-sm">尚未加入成員</div>
             <div v-else class="space-y-3">
-              <div v-for="m in members" :key="m" class="flex justify-between items-center border-b border-slate-100 pb-2 last:border-0 last:pb-0">
-                <span class="font-medium">{{ m }}</span>
+              <div v-for="m in members" :key="m" class="flex justify-between items-center border-b border-slate-700/50 pb-2.5 last:border-0 last:pb-0">
+                <span class="font-medium text-slate-200">{{ m }}</span>
                 <div class="text-right text-sm">
-                  <div class="text-slate-500">已付: {{ (memberTotals[m]?.paid || 0).toLocaleString() }} / 應付: {{ (memberTotals[m]?.split || 0).toLocaleString() }}</div>
-                  <div :class="memberBalances[m] >= 0 ? 'text-emerald-600 font-bold' : 'text-rose-600 font-bold'">
+                  <div class="text-slate-400 text-xs">已付: {{ (memberTotals[m]?.paid || 0).toLocaleString() }} / 應付: {{ (memberTotals[m]?.split || 0).toLocaleString() }}</div>
+                  <div :class="memberBalances[m] >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'">
                     {{ memberBalances[m] > 0 ? '+' : '' }}{{ (memberBalances[m] || 0).toLocaleString() }}
                   </div>
                 </div>
@@ -85,17 +96,17 @@
           </div>
 
           <!-- Settlements -->
-          <div class="bg-white rounded-2xl p-6 card-shadow border-t-4 border-primary-500">
-            <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="ph ph-hand-coins"></i> 最佳化轉帳指引</h2>
-            <div v-if="settlements.length === 0" class="text-slate-500 text-sm">目前帳目已結清或無帳目</div>
-            <div v-else class="space-y-4">
-              <div v-for="(s, idx) in settlements" :key="idx" class="flex items-center justify-between bg-slate-50 p-3 rounded-lg">
-                <div class="flex items-center gap-3">
-                  <span class="font-semibold text-rose-600">{{ s.from }}</span>
-                  <i class="ph ph-arrow-right text-slate-400"></i>
-                  <span class="font-semibold text-emerald-600">{{ s.to }}</span>
+          <div class="bg-slate-800 rounded-2xl p-6 card-shadow border border-slate-700/60 border-t-4 border-t-primary-500">
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-white"><i class="ph ph-hand-coins text-primary-400"></i> 最佳化轉帳指引</h2>
+            <div v-if="settlements.length === 0" class="text-slate-400 text-sm">目前帳目已結清或無帳目</div>
+            <div v-else class="space-y-3">
+              <div v-for="(s, idx) in settlements" :key="idx" class="flex items-center justify-between bg-slate-750/70 border border-slate-700/60 p-3 rounded-lg">
+                <div class="flex items-center gap-2.5">
+                  <span class="font-semibold text-rose-400">{{ s.from }}</span>
+                  <i class="ph ph-arrow-right text-slate-500 text-sm"></i>
+                  <span class="font-semibold text-emerald-400">{{ s.to }}</span>
                 </div>
-                <div class="font-bold text-lg text-slate-800">
+                <div class="font-bold text-lg text-slate-100">
                   ${{ s.amount.toLocaleString() }}
                 </div>
               </div>
@@ -105,40 +116,40 @@
 
         <!-- Expense List -->
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xl font-bold">消費明細</h2>
+          <h2 class="text-xl font-bold text-white">消費明細</h2>
           <button @click="openExpenseModal()" class="bg-primary-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-600 transition flex items-center gap-2 shadow-sm">
             <i class="ph ph-plus-circle text-lg"></i> 新增消費
           </button>
         </div>
 
-        <div class="bg-white rounded-2xl card-shadow overflow-hidden">
-          <div v-if="expenses.length === 0" class="p-8 text-center text-slate-500">
+        <div class="bg-slate-800 rounded-2xl card-shadow border border-slate-700/60 overflow-hidden">
+          <div v-if="expenses.length === 0" class="p-8 text-center text-slate-400">
             尚無消費紀錄，點擊上方按鈕新增吧！
           </div>
-          <div v-else class="divide-y divide-slate-100">
-            <div v-for="exp in expenses" :key="exp.id" class="p-4 hover:bg-slate-50 transition flex items-start sm:items-center justify-between flex-col sm:flex-row gap-4">
+          <div v-else class="divide-y divide-slate-700/60">
+            <div v-for="exp in expenses" :key="exp.id" class="p-4 hover:bg-slate-750/50 transition flex items-start sm:items-center justify-between flex-col sm:flex-row gap-4">
               <div>
-                <div class="flex items-center gap-2 mb-1">
-                  <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">{{ exp.date }}</span>
-                  <span class="font-bold">{{ exp.store }}</span>
-                  <span class="text-slate-600">{{ exp.item }}</span>
-                  <span v-if="exp.hasServiceFee" class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded ml-2">+10% 服務費</span>
+                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                  <span class="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-mono">{{ exp.date }}</span>
+                  <span class="font-bold text-slate-100">{{ exp.store }}</span>
+                  <span class="text-slate-300 text-sm">{{ exp.item }}</span>
+                  <span v-if="exp.hasServiceFee" class="text-xs bg-amber-950/70 text-amber-300 border border-amber-800/40 px-2 py-0.5 rounded ml-1">+10% 服務費</span>
                 </div>
-                <div class="text-sm text-slate-500 flex items-center gap-4">
-                  <span><i class="ph ph-wallet"></i> {{ exp.payer }} 先墊</span>
-                  <span><i class="ph ph-users"></i> {{ exp.splitters.length }} 人分攤</span>
+                <div class="text-sm text-slate-400 flex items-center gap-4 mt-1">
+                  <span><i class="ph ph-wallet text-slate-500"></i> {{ exp.payer }} 先墊</span>
+                  <span><i class="ph ph-users text-slate-500"></i> {{ exp.splitters.length }} 人分攤</span>
                 </div>
                 <div v-if="exp.note" class="text-xs text-slate-400 mt-1">{{ exp.note }}</div>
               </div>
               
               <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
                 <div class="text-right">
-                  <div class="font-bold text-lg">${{ getExpenseTotal(exp).toLocaleString() }}</div>
-                  <div class="text-xs text-slate-500">${{ (getExpenseTotal(exp) / exp.splitters.length).toFixed(0) }} / 人</div>
+                  <div class="font-bold text-lg text-slate-100">${{ getExpenseTotal(exp).toLocaleString() }}</div>
+                  <div class="text-xs text-slate-400">${{ (getExpenseTotal(exp) / exp.splitters.length).toFixed(0) }} / 人</div>
                 </div>
                 <div class="flex gap-2">
-                  <button @click="openExpenseModal(exp)" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition"><i class="ph ph-pencil-simple"></i></button>
-                  <button @click="deleteExpense(exp.id)" class="w-8 h-8 flex items-center justify-center rounded-full bg-rose-50 text-rose-600 hover:bg-rose-100 transition"><i class="ph ph-trash"></i></button>
+                  <button @click="openExpenseModal(exp)" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white transition" title="編輯"><i class="ph ph-pencil-simple"></i></button>
+                  <button @click="deleteExpense(exp.id)" class="w-8 h-8 flex items-center justify-center rounded-full bg-rose-950/60 text-rose-300 hover:bg-rose-900/60 transition" title="刪除"><i class="ph ph-trash"></i></button>
                 </div>
               </div>
             </div>
@@ -148,11 +159,11 @@
     </div>
 
     <!-- Expense Modal -->
-    <div v-if="isExpenseModalOpen" class="fixed inset-0 z-40 bg-black/50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]">
-        <div class="p-5 border-b border-slate-100 flex justify-between items-center">
-          <h3 class="font-bold text-lg">{{ modalForm.id ? '編輯消費' : '新增消費' }}</h3>
-          <button @click="closeExpenseModal" class="text-slate-400 hover:text-slate-600"><i class="ph ph-x text-xl"></i></button>
+    <div v-if="isExpenseModalOpen" class="fixed inset-0 z-40 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh] text-slate-100">
+        <div class="p-5 border-b border-slate-700/80 flex justify-between items-center bg-slate-850 rounded-t-2xl">
+          <h3 class="font-bold text-lg text-white">{{ modalForm.id ? '編輯消費' : '新增消費' }}</h3>
+          <button @click="closeExpenseModal" class="text-slate-400 hover:text-slate-200"><i class="ph ph-x text-xl"></i></button>
         </div>
         
         <div class="p-5 overflow-y-auto">
@@ -160,14 +171,14 @@
             <!-- Date & Amount -->
             <div class="flex gap-4">
               <div class="flex-1">
-                <label class="block text-sm font-medium text-slate-700 mb-1">日期</label>
-                <input v-model="modalForm.date" type="date" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+                <label class="block text-sm font-medium text-slate-300 mb-1">日期</label>
+                <input v-model="modalForm.date" type="date" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100">
               </div>
               <div class="flex-1">
-                <label class="block text-sm font-medium text-slate-700 mb-1">金額</label>
+                <label class="block text-sm font-medium text-slate-300 mb-1">金額</label>
                 <div class="relative">
                   <span class="absolute left-3 top-2 text-slate-500">$</span>
-                  <input v-model.number="modalForm.amount" type="number" min="0" class="w-full border border-slate-300 rounded-lg pl-7 pr-3 py-2">
+                  <input v-model.number="modalForm.amount" type="number" min="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-7 pr-3 py-2 text-slate-100">
                 </div>
               </div>
             </div>
@@ -175,43 +186,43 @@
             <!-- Store & Item -->
             <div class="flex gap-4">
               <div class="flex-1">
-                <label class="block text-sm font-medium text-slate-700 mb-1">店家/標題</label>
-                <input v-model="modalForm.store" type="text" placeholder="例如：一蘭拉麵" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+                <label class="block text-sm font-medium text-slate-300 mb-1">店家/標題</label>
+                <input v-model="modalForm.store" type="text" placeholder="例如：一蘭拉麵" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 placeholder-slate-500">
               </div>
               <div class="flex-1">
-                <label class="block text-sm font-medium text-slate-700 mb-1">項目(選填)</label>
-                <input v-model="modalForm.item" type="text" placeholder="例如：午餐" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+                <label class="block text-sm font-medium text-slate-300 mb-1">項目(選填)</label>
+                <input v-model="modalForm.item" type="text" placeholder="例如：午餐" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 placeholder-slate-500">
               </div>
             </div>
 
             <!-- Service Fee -->
-            <label class="flex items-center gap-2 cursor-pointer p-3 bg-slate-50 rounded-lg border border-slate-100 hover:bg-slate-100 transition">
-              <input v-model="modalForm.hasServiceFee" type="checkbox" class="w-5 h-5 text-primary-600 rounded">
-              <span class="font-medium text-slate-700">加 10% 服務費</span>
-              <span v-if="modalForm.amount" class="ml-auto text-primary-600 font-bold">總計: ${{ getExpenseTotal(modalForm).toLocaleString() }}</span>
+            <label class="flex items-center gap-2 cursor-pointer p-3 bg-slate-750/70 rounded-lg border border-slate-700 hover:bg-slate-700 transition">
+              <input v-model="modalForm.hasServiceFee" type="checkbox" class="w-5 h-5 accent-primary-500 rounded">
+              <span class="font-medium text-slate-200">加 10% 服務費</span>
+              <span v-if="modalForm.amount" class="ml-auto text-primary-400 font-bold">總計: ${{ getExpenseTotal(modalForm).toLocaleString() }}</span>
             </label>
 
-            <hr class="border-slate-100">
+            <hr class="border-slate-700/80">
 
             <!-- Dynamic Member Addition -->
-            <div class="bg-primary-50 p-3 rounded-lg border border-primary-100 flex items-end gap-2">
+            <div class="bg-slate-900/70 p-3 rounded-lg border border-slate-700 flex items-end gap-2">
               <div class="flex-1">
-                <label class="block text-xs font-bold text-primary-700 mb-1">新成員加入？</label>
-                <input v-model="newMemberName" type="text" placeholder="輸入成員名字" class="w-full border border-primary-200 rounded px-2 py-1.5 text-sm" @keyup.enter="addMember">
+                <label class="block text-xs font-bold text-primary-400 mb-1">新成員加入？</label>
+                <input v-model="newMemberName" type="text" placeholder="輸入成員名字" class="w-full bg-slate-800 border border-slate-700 rounded px-2.5 py-1.5 text-sm text-slate-100 placeholder-slate-500" @keyup.enter="addMember">
               </div>
-              <button @click="addMember" :disabled="!newMemberName || isLoadingMember" class="bg-primary-600 text-white px-3 py-1.5 rounded text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition">
+              <button @click="addMember" :disabled="!newMemberName || isLoadingMember" class="bg-primary-600 text-white px-3 py-1.5 rounded text-sm font-medium hover:bg-primary-500 disabled:opacity-50 transition">
                 新增
               </button>
             </div>
 
             <!-- Payer -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-2">誰先付了錢？ (Payer)</label>
+              <label class="block text-sm font-medium text-slate-300 mb-2">誰先付了錢？ (Payer)</label>
               <div class="flex flex-wrap gap-2">
-                <div v-if="members.length === 0" class="text-sm text-slate-500">請先新增成員</div>
+                <div v-if="members.length === 0" class="text-sm text-slate-400">請先新增成員</div>
                 <label v-for="m in members" :key="m" class="cursor-pointer">
                   <input type="radio" :value="m" v-model="modalForm.payer" class="peer sr-only" @change="onPayerChange(m)">
-                  <div class="px-3 py-1.5 rounded-full border border-slate-200 text-sm font-medium peer-checked:bg-slate-800 peer-checked:text-white peer-checked:border-slate-800 transition">
+                  <div class="px-3 py-1.5 rounded-full border border-slate-700 bg-slate-900/60 text-slate-300 text-sm font-medium peer-checked:bg-white peer-checked:text-slate-900 peer-checked:border-white transition">
                     {{ m }}
                   </div>
                 </label>
@@ -221,17 +232,17 @@
             <!-- Splitters -->
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-slate-700">誰該付錢？ (Splitters)</label>
+                <label class="block text-sm font-medium text-slate-300">誰該付錢？ (Splitters)</label>
                 <div class="space-x-2 text-xs">
-                  <button @click="modalForm.splitters = [...members]" class="text-primary-600 hover:underline">全選</button>
-                  <button @click="modalForm.splitters = []" class="text-slate-500 hover:underline">全不選</button>
+                  <button @click="modalForm.splitters = [...members]" class="text-primary-400 hover:underline">全選</button>
+                  <button @click="modalForm.splitters = []" class="text-slate-400 hover:underline">全不選</button>
                 </div>
               </div>
               <div class="flex flex-wrap gap-2">
-                <div v-if="members.length === 0" class="text-sm text-slate-500">請先新增成員</div>
+                <div v-if="members.length === 0" class="text-sm text-slate-400">請先新增成員</div>
                 <label v-for="m in members" :key="m" class="cursor-pointer">
                   <input type="checkbox" :value="m" v-model="modalForm.splitters" class="peer sr-only">
-                  <div class="px-3 py-1.5 rounded-full border border-slate-200 text-sm font-medium peer-checked:bg-primary-500 peer-checked:text-white peer-checked:border-primary-500 transition">
+                  <div class="px-3 py-1.5 rounded-full border border-slate-700 bg-slate-900/60 text-slate-300 text-sm font-medium peer-checked:bg-primary-500 peer-checked:text-white peer-checked:border-primary-500 transition">
                     {{ m }}
                   </div>
                 </label>
@@ -240,15 +251,15 @@
 
             <!-- Note -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">備註 (Note)</label>
-              <input v-model="modalForm.note" type="text" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+              <label class="block text-sm font-medium text-slate-300 mb-1">備註 (Note)</label>
+              <input v-model="modalForm.note" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 placeholder-slate-500">
             </div>
             
           </div>
         </div>
 
-        <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 rounded-b-2xl">
-          <button @click="closeExpenseModal" class="px-4 py-2 font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition">取消</button>
+        <div class="p-5 border-t border-slate-700/80 flex justify-end gap-3 bg-slate-850 rounded-b-2xl">
+          <button @click="closeExpenseModal" class="px-4 py-2 font-medium text-slate-400 hover:bg-slate-750 hover:text-slate-200 rounded-lg transition">取消</button>
           <button @click="saveExpense" :disabled="!isModalValid || isSaving" class="px-6 py-2 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition disabled:opacity-50 flex items-center gap-2">
             <i v-if="isSaving" class="ph ph-spinner animate-spin"></i>
             儲存
@@ -261,6 +272,18 @@
 
 <script>
   const { createApp, ref, computed, onMounted } = Vue;
+  const STORAGE_KEY = 'BILL_SPLITTER_CURRENT_TRIP';
+
+  // Format Date to YYYY/MM/DD HH:mm (using client local timezone)
+  function formatDateTime(d = new Date()) {
+    const pad = (n) => String(n).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    const mm = pad(d.getMonth() + 1);
+    const dd = pad(d.getDate());
+    const hh = pad(d.getHours());
+    const min = pad(d.getMinutes());
+    return `${yyyy}/${mm}/${dd} ${hh}:${min}`;
+  }
 
   // Wrapper for google.script.run
   function callGasApi(method, ...args) {
@@ -269,11 +292,11 @@
         // Mock fallback for local UI preview
         console.warn(`Local Mock: callGasApi('${method}')`, args);
         setTimeout(() => {
-          if (method === 'getTripData') resolve({ members: ['A','B'], expenses: [] });
+          if (method === 'getTripData') resolve({ members: ['Alice', 'Bob'], expenses: [] });
           else if (method === 'createTrip') resolve({ success: true, message: 'Mock Created' });
-          else if (method === 'addMember') resolve({ success: true, members: [...args[1] ? ['A','B',args[1]] : ['A','B']] });
+          else if (method === 'addMember') resolve({ success: true, members: [...args[1] ? ['Alice', 'Bob', args[1]] : ['Alice', 'Bob']] });
           else resolve({ success: true });
-        }, 800);
+        }, 600);
         return;
       }
       google.script.run
@@ -291,9 +314,11 @@
       const tripInput = ref('');
       const newTripInput = ref('');
       const isLoading = ref(false);
+      const isRefreshing = ref(false);
       const isSaving = ref(false);
       const isLoadingMember = ref(false);
       const toastMessage = ref('');
+      const lastUpdatedTime = ref('');
       
       const members = ref([]);
       const expenses = ref([]);
@@ -322,20 +347,116 @@
         toastTimeout = setTimeout(() => { toastMessage.value = ''; }, 3000);
       };
 
-      // Initialization
+      // History & URL Sync helper
+      const updateUrlHistory = (name) => {
+        try {
+          if (name) {
+            if (typeof google !== 'undefined' && google.script && google.script.history) {
+              google.script.history.push(null, { trip: name }, `?trip=${encodeURIComponent(name)}`);
+            }
+            if (window.history && window.history.pushState) {
+              const newUrl = `${window.location.pathname}?trip=${encodeURIComponent(name)}`;
+              window.history.pushState({ trip: name }, '', newUrl);
+            }
+          } else {
+            if (typeof google !== 'undefined' && google.script && google.script.history) {
+              google.script.history.push(null, {}, '');
+            }
+            if (window.history && window.history.pushState) {
+              window.history.pushState({}, '', window.location.pathname);
+            }
+          }
+        } catch (e) {
+          console.warn('History API update skipped:', e);
+        }
+      };
+
+      // Fetch Trip Data (Supports silent in-place refresh)
+      const fetchTripData = async (isSilent = false) => {
+        if (!tripId.value) return;
+        if (isSilent) {
+          isRefreshing.value = true;
+        } else {
+          isLoading.value = true;
+        }
+        try {
+          const data = await callGasApi('getTripData', tripId.value);
+          members.value = data.members || [];
+          expenses.value = data.expenses || [];
+          lastUpdatedTime.value = formatDateTime(new Date());
+          localStorage.setItem(STORAGE_KEY, tripId.value);
+          if (isSilent) {
+            showToast('已更新最新帳目');
+          }
+        } catch (err) {
+          showToast(err.message || '讀取資料失敗');
+          if (!isSilent && expenses.value.length === 0) {
+            tripId.value = '';
+            localStorage.removeItem(STORAGE_KEY);
+            updateUrlHistory('');
+          }
+        } finally {
+          isLoading.value = false;
+          isRefreshing.value = false;
+        }
+      };
+
+      // Initialization & Lifecycle
       onMounted(() => {
-        const t = window.INITIAL_TRIP;
-        if (t) {
-          tripId.value = t;
+        const urlTrip = window.INITIAL_TRIP;
+        const savedTrip = localStorage.getItem(STORAGE_KEY);
+
+        if (urlTrip) {
+          tripId.value = urlTrip;
+          localStorage.setItem(STORAGE_KEY, urlTrip);
+          fetchTripData();
+        } else if (savedTrip) {
+          tripId.value = savedTrip;
+          updateUrlHistory(savedTrip);
           fetchTripData();
         }
+
+        // Browser Popstate (Back button) handling
+        window.addEventListener('popstate', (e) => {
+          const params = new URLSearchParams(window.location.search);
+          const currentTripInUrl = params.get('trip');
+          if (currentTripInUrl && currentTripInUrl !== tripId.value) {
+            tripId.value = currentTripInUrl;
+            fetchTripData();
+          } else if (!currentTripInUrl && tripId.value) {
+            tripId.value = '';
+            localStorage.removeItem(STORAGE_KEY);
+          }
+        });
+
+        // GAS History handler
+        if (typeof google !== 'undefined' && google.script && google.script.history) {
+          google.script.history.setChangeHandler((e) => {
+            const tripParam = e.location && e.location.parameter && e.location.parameter.trip;
+            if (tripParam && tripParam !== tripId.value) {
+              tripId.value = tripParam;
+              fetchTripData();
+            } else if (!tripParam && tripId.value) {
+              tripId.value = '';
+              localStorage.removeItem(STORAGE_KEY);
+            }
+          });
+        }
+
+        // Tab focus / Visibility auto-sync
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible' && tripId.value && !isExpenseModalOpen.value && !isSaving.value) {
+            fetchTripData(true);
+          }
+        });
       });
 
-      // Actions
+      // User Actions
       const enterTrip = () => {
         if (!tripInput.value.trim()) return;
         const name = tripInput.value.trim();
         tripId.value = name;
+        updateUrlHistory(name);
         fetchTripData();
       };
 
@@ -348,6 +469,7 @@
           if (res.success) {
             tripId.value = name;
             newTripInput.value = '';
+            updateUrlHistory(name);
             await fetchTripData();
           } else {
             showToast(res.message || '建立失敗');
@@ -359,33 +481,17 @@
         }
       };
 
-      const fetchTripData = async () => {
-        isLoading.value = true;
-        try {
-          const data = await callGasApi('getTripData', tripId.value);
-          members.value = data.members || [];
-          expenses.value = data.expenses || [];
-        } catch (err) {
-          showToast(err.message || '讀取資料失敗');
-          // fallback to home
-          tripId.value = ''; 
-        } finally {
-          isLoading.value = false;
-        }
-      };
-
       const goHome = () => {
         tripId.value = '';
         tripInput.value = '';
         newTripInput.value = '';
-        // Clear query string from URL if any
-        window.history.pushState({}, '', window.location.pathname);
+        localStorage.removeItem(STORAGE_KEY);
+        updateUrlHistory('');
       };
 
       const copyLink = () => {
         let baseUrl = window.APP_URL;
         if (!baseUrl) {
-          // fallback for local dev
           baseUrl = window.location.origin + window.location.pathname;
         }
         const url = `${baseUrl}?trip=${encodeURIComponent(tripId.value)}`;
@@ -410,7 +516,6 @@
       };
 
       const onPayerChange = (payer) => {
-        // If splitters is empty and it's a new expense, auto-check the payer
         if (!modalForm.value.id && modalForm.value.splitters.length === 0 && payer) {
           modalForm.value.splitters = [payer];
         }
@@ -429,6 +534,7 @@
           if (res.success) {
             members.value = res.members;
             newMemberName.value = '';
+            lastUpdatedTime.value = formatDateTime(new Date());
             showToast('新增成員成功');
           }
         } catch (err) {
@@ -444,7 +550,7 @@
           await callGasApi('saveExpense', tripId.value, modalForm.value);
           showToast('儲存成功');
           closeExpenseModal();
-          await fetchTripData(); // refresh data
+          await fetchTripData(true); // in-place refresh data & timestamp
         } catch (err) {
           showToast(err.message);
         } finally {
@@ -457,7 +563,7 @@
         try {
           await callGasApi('deleteExpense', tripId.value, id);
           showToast('已刪除');
-          await fetchTripData();
+          await fetchTripData(true); // in-place refresh data & timestamp
         } catch (err) {
           showToast(err.message);
         }
@@ -475,7 +581,6 @@
       });
 
       // --- Settlement Calculation ---
-      // memberTotals: { 'A': { paid: 100, split: 50 }, ... }
       const memberTotals = computed(() => {
         const totals = {};
         members.value.forEach(m => totals[m] = { paid: 0, split: 0 });
@@ -493,7 +598,6 @@
           }
         });
         
-        // Round numbers to 2 decimal places
         Object.keys(totals).forEach(k => {
           totals[k].paid = Math.round(totals[k].paid * 100) / 100;
           totals[k].split = Math.round(totals[k].split * 100) / 100;
@@ -519,7 +623,6 @@
           else if (amount < 0) debtors.push({ person, amount: -amount });
         });
         
-        // Sort descending
         debtors.sort((a, b) => b.amount - a.amount);
         creditors.sort((a, b) => b.amount - a.amount);
         
@@ -552,7 +655,7 @@
       });
 
       return {
-        tripId, tripInput, newTripInput, isLoading, isSaving, isLoadingMember, toastMessage,
+        tripId, tripInput, newTripInput, isLoading, isRefreshing, isSaving, isLoadingMember, toastMessage, lastUpdatedTime,
         members, expenses, isExpenseModalOpen, modalForm, newMemberName,
         enterTrip, createNewTrip, fetchTripData, copyLink, goHome,
         openExpenseModal, closeExpenseModal, onPayerChange, addMember, saveExpense, deleteExpense,

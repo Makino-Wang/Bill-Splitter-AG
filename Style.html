@@ -1,14 +1,21 @@
 <script>
   tailwind.config = {
+    darkMode: 'class',
     theme: {
       extend: {
         fontFamily: {
           sans: ['Inter', 'sans-serif'],
         },
         colors: {
+          slate: {
+            750: '#293548',
+            850: '#172033',
+            950: '#0b1120'
+          },
           primary: {
             50: '#f0f9ff',
             100: '#e0f2fe',
+            400: '#38bdf8',
             500: '#0ea5e9',
             600: '#0284c7',
             700: '#0369a1',
@@ -20,6 +27,10 @@
 </script>
 
 <style type="text/tailwindcss">
+  html, body {
+    overscroll-behavior-y: contain;
+  }
+
   @layer utilities {
     /* Hide scrollbar for Chrome, Safari and Opera */
     .no-scrollbar::-webkit-scrollbar {
@@ -37,13 +48,18 @@
     display: none;
   }
   
-  /* Soft shadow for premium feel */
+  /* Soft dark shadow for premium feel */
   .card-shadow {
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4), 0 2px 6px -1px rgba(0, 0, 0, 0.2);
   }
 
   /* Form inputs focus styles globally */
   input:focus, select:focus, textarea:focus {
     @apply outline-none ring-2 ring-primary-500 border-primary-500;
+  }
+
+  /* Ensure native date picker dialogs render in dark mode */
+  input[type="date"], input[type="time"], input[type="datetime-local"] {
+    color-scheme: dark;
   }
 </style>
