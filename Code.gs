@@ -18,12 +18,25 @@ function include(filename) {
 }
 
 /**
+ * 預設 Google Spreadsheet ID
+ */
+const SPREADSHEET_ID = '1rOeUD2PyJnnBEQbR3e3h-kFZR9Ir-Tddkmb6CqGc9P0';
+
+/**
  * 取得共用的 Spreadsheet 實體
  */
 function getSpreadsheet() {
-  const id = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
+  const id = SPREADSHEET_ID || PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
   if (!id) throw new Error('請先在指令碼屬性中設定 SPREADSHEET_ID');
   return SpreadsheetApp.openById(id);
+}
+
+/**
+ * 一鍵設定/更新指令碼屬性 (可在 GAS 編輯器上方選取 setSpreadsheetId 執行)
+ */
+function setSpreadsheetId() {
+  PropertiesService.getScriptProperties().setProperty('SPREADSHEET_ID', SPREADSHEET_ID);
+  Logger.log('已成功將 SPREADSHEET_ID 設定為: ' + SPREADSHEET_ID);
 }
 
 /**
